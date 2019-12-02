@@ -2,7 +2,7 @@
     <div class="login_com">
         <div class="login_box">
             <div class="portrait_box">
-                <img class="login_portrait" src="../assets/logo.png">
+                <img class="login_portrait" src="../assets/imgs/logo.png">
             </div>
              <!-- 登录表单区域 -->
             <el-form class="login_form" ref="loginFormRef" :model="loginForm" :rules="loginRulesForm">
@@ -52,6 +52,7 @@ export default {
           return
         }
         const { data: res } = await that.$http.post('login', that.loginForm)
+        console.log(res)
         if (res.meta.status !== 200) return that.$message.error('登录失败')
         this.$message.success('登录成功')
         // 保存token
