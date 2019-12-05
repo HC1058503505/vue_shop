@@ -11,23 +11,25 @@
           </el-button>
         </el-header>
         <el-container>
-          <el-aside width="200px" class="el_aside">
-            <el-menu  default-active="2"
-                      class="el-menu-vertical-demo"
+          <el-aside :width="isCollapse ? '64px' : '200px'" class="el_aside">
+            <div class="toggle-button" @click="toggleCollapse">|||</div>
+            <el-menu  class="el-menu-vertical-demo"
                       @open="handleOpen"
                       @close="handleClose"
-                      background-color="#545c64"
+                      background-color="#373d41"
                       text-color="#fff"
                       active-text-color="#ffd04b"
-                      :index="menu.id"
-                      :key="menu.id"
-                      v-for="menu in menulists">
-              <el-submenu>
+                      unique-opened
+                      :collapse="isCollapse"
+                      :collapse-transition="false"
+                      :default-active="active_index"
+                      router>
+              <el-submenu :index="menu.id + ''" :key="menu.id" v-for="menu in menulists">
                 <template slot="title">
                   <i :class="iconsObj[menu.id]"></i>
                   <span>{{ menu.authName }}</span>
                 </template>
-                <el-menu-item :index="sub.id" v-for="sub in menu.children" :key="sub.id">
+                <el-menu-item :index="'/' + sub.path" v-for="sub in menu.children" :key="sub.id" @click="saveSubMenuState('/' + sub.path)">
                   <template slot="title">
                     <i class="el-icon-menu"></i>
                     <span>{{ sub.authName }}</span>
@@ -56,7 +58,9 @@ export default {
         '101': 'iconfont icon-shangpin',
         '102': 'iconfont icon-danju',
         '145': 'iconfont icon-baobiao'
-      }
+      },
+      isCollapse: false,
+      active_index: ''
     }
   },
   async created () {
@@ -65,17 +69,25 @@ export default {
       return
     }
     this.menulists = res.data
+    this.active_index = window.sessionStorage.getItem('activePath')
   },
   methods: {
     logout: function () {
       window.sessionStorage.clear()
       this.$router.push('/login')
     },
+    toggleCollapse: function () {
+      this.isCollapse = !this.isCollapse
+    },
     handleOpen: function () {
 
     },
     handleClose: function () {
 
+    },
+    saveSubMenuState: function (path) {
+      window.sessionStorage.setItem('activePath', path)
+      this.active_index = path
     }
   }
 }
@@ -113,7 +125,7 @@ export default {
 }
 
 .el_aside {
-  background-color: aquamarine;
+  background-color: #373d41;
 }
 
 .el_main {
@@ -122,5 +134,15 @@ export default {
 
 .iconfont {
   margin-right: 10px;
+}
+
+.toggle-button {
+  background-color: #4a5064;
+  letter-spacing: 0.2em;
+  font-size: 10px;
+  line-height: 24px;
+  color: #ffff;
+  text-align: center;
+  cursor: pointer;
 }
 </style>
