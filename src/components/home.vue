@@ -18,7 +18,7 @@
                       @close="handleClose"
                       background-color="#373d41"
                       text-color="#fff"
-                      active-text-color="#ffd04b"
+                      active-text-color="#d4237a"
                       unique-opened
                       :collapse="isCollapse"
                       :collapse-transition="false"
@@ -29,7 +29,7 @@
                   <i :class="iconsObj[menu.id]"></i>
                   <span>{{ menu.authName }}</span>
                 </template>
-                <el-menu-item :index="'/' + sub.path" v-for="sub in menu.children" :key="sub.id" @click="saveSubMenuState('/' + sub.path)">
+                <el-menu-item :index="'/' + sub.path" v-for="sub in menu.children" :key="sub.id" @click="saveSubMenuState('/' + sub.path, menu.authName + '|' + sub.authName)">
                   <template slot="title">
                     <i class="el-icon-menu"></i>
                     <span>{{ sub.authName }}</span>
@@ -60,7 +60,8 @@ export default {
         '145': 'iconfont icon-baobiao'
       },
       isCollapse: false,
-      active_index: ''
+      active_index: '/users',
+      breadPaths: ''
     }
   },
   async created () {
@@ -85,9 +86,11 @@ export default {
     handleClose: function () {
 
     },
-    saveSubMenuState: function (path) {
+    saveSubMenuState: function (path, breadpcaths) {
+      this.breadPaths = breadpcaths
       window.sessionStorage.setItem('activePath', path)
       this.active_index = path
+      console.log(path)
     }
   }
 }
