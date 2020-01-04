@@ -54,7 +54,7 @@
                 <el-table-column label="操作" width="180px">
                     <template slot-scope="scope">
                             <el-tooltip :enterable="false" effect="dark" content="编辑用户信息" placement="top">
-                                <el-button class="user_caozuo_edit_btn" size="mini" type="primary" icon="el-icon-edit">
+                                <el-button class="user_caozuo_edit_btn" size="mini" type="primary" icon="el-icon-edit" @click="showEditUserDialog(scope.row)">
                                 </el-button>
                             </el-tooltip>
 
@@ -76,7 +76,7 @@
                 @size-change="handleSizeChange"
                 @current-change="handleCurrentChange"
                 :current-page="queryInfo.pagenum"
-                :page-sizes="[1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]"
+                :page-sizes="[1, 2, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]"
                 :page-size="queryInfo.pagesize"
                 layout="total, sizes, prev, pager, next, jumper"
                 :total="total">
@@ -84,7 +84,7 @@
         </el-card>
 
         <!--添加用户弹窗-->
-        <el-dialog title="收货地址" :visible.sync="dialogFormVisible" @close="dialogCloseAction">
+        <el-dialog title="添加用户弹窗" :visible.sync="dialogFormVisible" @close="dialogCloseAction">
           <el-form :model="form" :rules="formRules" ref="form">
             <!-----------用户名--------------->
             <el-form-item label="用户名" :label-width="formLabelWidth" prop="username">
@@ -106,6 +106,28 @@
           <div slot="footer" class="dialog-footer">
             <el-button @click="cancleAddUser">取 消</el-button>
             <el-button type="primary" @click="sureAddUser">确 定</el-button>
+          </div>
+        </el-dialog>
+
+        <!---修改用户弹窗----->
+        <el-dialog title="修改用户信息弹窗" :visible.sync="editDialogFormVisible" @close="dialogCloseAction">
+          <el-form :model="editForm" :rules="formRules" ref="edituserForm">
+            <!-----------用户名--------------->
+            <el-form-item label="用户名" :label-width="formLabelWidth" prop="username">
+              <el-input v-model="editForm.username" auto-complete="off" disabled></el-input>
+            </el-form-item>
+            <!-----------邮箱--------------->
+            <el-form-item label="邮箱" :label-width="formLabelWidth" prop="email">
+              <el-input v-model="editForm.email" auto-complete="off"></el-input>
+            </el-form-item>
+            <!-----------手机号--------------->
+            <el-form-item label="手机号" :label-width="formLabelWidth" prop="mobile">
+              <el-input v-model="editForm.mobile" auto-complete="off"></el-input>
+            </el-form-item>
+          </el-form>
+          <div slot="footer" class="dialog-footer">
+            <el-button @click="cancleEditUser">取 消</el-button>
+            <el-button type="primary" @click="sureEditUser">确 定</el-button>
           </div>
         </el-dialog>
     </div>
@@ -144,6 +166,13 @@ export default {
       total: 0,
       querystring: '',
       dialogFormVisible: false,
+      editDialogFormVisible: false,
+      editForm: {
+        id: 0,
+        username: '',
+        email: '',
+        mobile: ''
+      },
       form: {
         username: '',
         password: '',
@@ -194,7 +223,6 @@ export default {
     },
     async mgStateChange (userinfo) {
       const { data: res } = await this.$http.put(`users/${userinfo.id}/state/${userinfo.mg_state}`)
-      console.log(res)
       if (res.meta.status !== 200) {
         userinfo.mg_state = !userinfo.mg_state
         this.$message.error('更新用户状态失败')
@@ -243,13 +271,43 @@ export default {
       }
 
       const { data: res } = await this.$http.delete(`users/${user.id}`)
-      if (res.meta.status === 200) {
-        this.$message.success('删除成功')
-        this.loadUsers()
+      if (res.meta.status !== 200) {
+        console.log(res)
+        this.$message.error(res.meta.msg)
+        return
       }
+      this.$message.success('删除成功')
+      this.loadUsers()
     },
     settingRole (user) {
       // 分配角色
+    },
+    showEditUserDialog (user) {
+      this.editForm = user
+      this.editDialogFormVisible = true
+    },
+    cancleEditUser () {
+      this.editDialogFormVisible = false
+      this.$refs.edituserForm.resetFields()
+    },
+    sureEditUser () {
+      console.log(this.editForm.id)
+      this.$refs.edituserForm.validate(async (valid) => {
+        if (!valid) {
+          return
+        }
+        let params = { email: this.editForm.email, mobile: this.editForm.mobile }
+        const { data: res } = await this.$http.put(`users/${this.editForm.id}`, params)
+        if (res.meta.status !== 200) {
+          this.$message.error('修改用户信息失败')
+          return
+        }
+
+        this.$refs.edituserForm.resetFields()
+        this.editDialogFormVisible = false
+        this.loadUsers()
+        this.$message.success('修改用户信息成功')
+      })
     }
   }
 }

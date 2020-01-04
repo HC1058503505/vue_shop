@@ -90,7 +90,6 @@ export default {
       this.breadPaths = breadpcaths
       window.sessionStorage.setItem('activePath', path)
       this.active_index = path
-      console.log(path)
     }
   }
 }
